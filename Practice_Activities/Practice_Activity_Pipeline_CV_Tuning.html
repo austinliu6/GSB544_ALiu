@@ -1,0 +1,1563 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.450">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Part 1</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="Practice_Activity_Pipeline_CV_Tuning_files/libs/clipboard/clipboard.min.js"></script>
+<script src="Practice_Activity_Pipeline_CV_Tuning_files/libs/quarto-html/quarto.js"></script>
+<script src="Practice_Activity_Pipeline_CV_Tuning_files/libs/quarto-html/popper.min.js"></script>
+<script src="Practice_Activity_Pipeline_CV_Tuning_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="Practice_Activity_Pipeline_CV_Tuning_files/libs/quarto-html/anchor.min.js"></script>
+<link href="Practice_Activity_Pipeline_CV_Tuning_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="Practice_Activity_Pipeline_CV_Tuning_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="Practice_Activity_Pipeline_CV_Tuning_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="Practice_Activity_Pipeline_CV_Tuning_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="Practice_Activity_Pipeline_CV_Tuning_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Part 1</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<div class="cell" data-execution_count="15">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.pipeline <span class="im">import</span> Pipeline</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.preprocessing <span class="im">import</span> StandardScaler, OneHotEncoder, PolynomialFeatures</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.linear_model <span class="im">import</span> LinearRegression</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.model_selection <span class="im">import</span> train_test_split</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> r2_score, mean_squared_error</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.compose <span class="im">import</span> ColumnTransformer</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.model_selection <span class="im">import</span> cross_val_score</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.model_selection <span class="im">import</span> GridSearchCV</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell" data-execution_count="16">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>ames <span class="op">=</span> pd.read_csv(<span class="st">"/Users/AustinLiu/Desktop/GSB544-ComputingandMachineLearning/In-Class-Data/AmesHousing.csv"</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>ames.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="16">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">Order</th>
+<th data-quarto-table-cell-role="th">PID</th>
+<th data-quarto-table-cell-role="th">MS SubClass</th>
+<th data-quarto-table-cell-role="th">MS Zoning</th>
+<th data-quarto-table-cell-role="th">Lot Frontage</th>
+<th data-quarto-table-cell-role="th">Lot Area</th>
+<th data-quarto-table-cell-role="th">Street</th>
+<th data-quarto-table-cell-role="th">Alley</th>
+<th data-quarto-table-cell-role="th">Lot Shape</th>
+<th data-quarto-table-cell-role="th">Land Contour</th>
+<th data-quarto-table-cell-role="th">...</th>
+<th data-quarto-table-cell-role="th">Pool Area</th>
+<th data-quarto-table-cell-role="th">Pool QC</th>
+<th data-quarto-table-cell-role="th">Fence</th>
+<th data-quarto-table-cell-role="th">Misc Feature</th>
+<th data-quarto-table-cell-role="th">Misc Val</th>
+<th data-quarto-table-cell-role="th">Mo Sold</th>
+<th data-quarto-table-cell-role="th">Yr Sold</th>
+<th data-quarto-table-cell-role="th">Sale Type</th>
+<th data-quarto-table-cell-role="th">Sale Condition</th>
+<th data-quarto-table-cell-role="th">SalePrice</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>1</td>
+<td>526301100</td>
+<td>20</td>
+<td>RL</td>
+<td>141.0</td>
+<td>31770</td>
+<td>Pave</td>
+<td>NaN</td>
+<td>IR1</td>
+<td>Lvl</td>
+<td>...</td>
+<td>0</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>0</td>
+<td>5</td>
+<td>2010</td>
+<td>WD</td>
+<td>Normal</td>
+<td>215000</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>2</td>
+<td>526350040</td>
+<td>20</td>
+<td>RH</td>
+<td>80.0</td>
+<td>11622</td>
+<td>Pave</td>
+<td>NaN</td>
+<td>Reg</td>
+<td>Lvl</td>
+<td>...</td>
+<td>0</td>
+<td>NaN</td>
+<td>MnPrv</td>
+<td>NaN</td>
+<td>0</td>
+<td>6</td>
+<td>2010</td>
+<td>WD</td>
+<td>Normal</td>
+<td>105000</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>3</td>
+<td>526351010</td>
+<td>20</td>
+<td>RL</td>
+<td>81.0</td>
+<td>14267</td>
+<td>Pave</td>
+<td>NaN</td>
+<td>IR1</td>
+<td>Lvl</td>
+<td>...</td>
+<td>0</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>Gar2</td>
+<td>12500</td>
+<td>6</td>
+<td>2010</td>
+<td>WD</td>
+<td>Normal</td>
+<td>172000</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>4</td>
+<td>526353030</td>
+<td>20</td>
+<td>RL</td>
+<td>93.0</td>
+<td>11160</td>
+<td>Pave</td>
+<td>NaN</td>
+<td>Reg</td>
+<td>Lvl</td>
+<td>...</td>
+<td>0</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>0</td>
+<td>4</td>
+<td>2010</td>
+<td>WD</td>
+<td>Normal</td>
+<td>244000</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>5</td>
+<td>527105010</td>
+<td>60</td>
+<td>RL</td>
+<td>74.0</td>
+<td>13830</td>
+<td>Pave</td>
+<td>NaN</td>
+<td>IR1</td>
+<td>Lvl</td>
+<td>...</td>
+<td>0</td>
+<td>NaN</td>
+<td>MnPrv</td>
+<td>NaN</td>
+<td>0</td>
+<td>3</td>
+<td>2010</td>
+<td>WD</td>
+<td>Normal</td>
+<td>189900</td>
+</tr>
+</tbody>
+</table>
+
+<p>5 rows × 82 columns</p>
+</div>
+</div>
+</div>
+<div class="cell" data-execution_count="17">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Get rid of columns with mostly NaN values</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>good_cols <span class="op">=</span> ames.isna().<span class="bu">sum</span>() <span class="op">&lt;</span> <span class="dv">100</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>ames <span class="op">=</span> ames.loc[:,good_cols]</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Drop other NAs</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>ames <span class="op">=</span> ames.dropna()</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>ames</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="17">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">Order</th>
+<th data-quarto-table-cell-role="th">PID</th>
+<th data-quarto-table-cell-role="th">MS SubClass</th>
+<th data-quarto-table-cell-role="th">MS Zoning</th>
+<th data-quarto-table-cell-role="th">Lot Area</th>
+<th data-quarto-table-cell-role="th">Street</th>
+<th data-quarto-table-cell-role="th">Lot Shape</th>
+<th data-quarto-table-cell-role="th">Land Contour</th>
+<th data-quarto-table-cell-role="th">Utilities</th>
+<th data-quarto-table-cell-role="th">Lot Config</th>
+<th data-quarto-table-cell-role="th">...</th>
+<th data-quarto-table-cell-role="th">Enclosed Porch</th>
+<th data-quarto-table-cell-role="th">3Ssn Porch</th>
+<th data-quarto-table-cell-role="th">Screen Porch</th>
+<th data-quarto-table-cell-role="th">Pool Area</th>
+<th data-quarto-table-cell-role="th">Misc Val</th>
+<th data-quarto-table-cell-role="th">Mo Sold</th>
+<th data-quarto-table-cell-role="th">Yr Sold</th>
+<th data-quarto-table-cell-role="th">Sale Type</th>
+<th data-quarto-table-cell-role="th">Sale Condition</th>
+<th data-quarto-table-cell-role="th">SalePrice</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>1</td>
+<td>526301100</td>
+<td>20</td>
+<td>RL</td>
+<td>31770</td>
+<td>Pave</td>
+<td>IR1</td>
+<td>Lvl</td>
+<td>AllPub</td>
+<td>Corner</td>
+<td>...</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>5</td>
+<td>2010</td>
+<td>WD</td>
+<td>Normal</td>
+<td>215000</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>2</td>
+<td>526350040</td>
+<td>20</td>
+<td>RH</td>
+<td>11622</td>
+<td>Pave</td>
+<td>Reg</td>
+<td>Lvl</td>
+<td>AllPub</td>
+<td>Inside</td>
+<td>...</td>
+<td>0</td>
+<td>0</td>
+<td>120</td>
+<td>0</td>
+<td>0</td>
+<td>6</td>
+<td>2010</td>
+<td>WD</td>
+<td>Normal</td>
+<td>105000</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>3</td>
+<td>526351010</td>
+<td>20</td>
+<td>RL</td>
+<td>14267</td>
+<td>Pave</td>
+<td>IR1</td>
+<td>Lvl</td>
+<td>AllPub</td>
+<td>Corner</td>
+<td>...</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>12500</td>
+<td>6</td>
+<td>2010</td>
+<td>WD</td>
+<td>Normal</td>
+<td>172000</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>4</td>
+<td>526353030</td>
+<td>20</td>
+<td>RL</td>
+<td>11160</td>
+<td>Pave</td>
+<td>Reg</td>
+<td>Lvl</td>
+<td>AllPub</td>
+<td>Corner</td>
+<td>...</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>4</td>
+<td>2010</td>
+<td>WD</td>
+<td>Normal</td>
+<td>244000</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>5</td>
+<td>527105010</td>
+<td>60</td>
+<td>RL</td>
+<td>13830</td>
+<td>Pave</td>
+<td>IR1</td>
+<td>Lvl</td>
+<td>AllPub</td>
+<td>Inside</td>
+<td>...</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>3</td>
+<td>2010</td>
+<td>WD</td>
+<td>Normal</td>
+<td>189900</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2925</td>
+<td>2926</td>
+<td>923275080</td>
+<td>80</td>
+<td>RL</td>
+<td>7937</td>
+<td>Pave</td>
+<td>IR1</td>
+<td>Lvl</td>
+<td>AllPub</td>
+<td>CulDSac</td>
+<td>...</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>3</td>
+<td>2006</td>
+<td>WD</td>
+<td>Normal</td>
+<td>142500</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">2926</td>
+<td>2927</td>
+<td>923276100</td>
+<td>20</td>
+<td>RL</td>
+<td>8885</td>
+<td>Pave</td>
+<td>IR1</td>
+<td>Low</td>
+<td>AllPub</td>
+<td>Inside</td>
+<td>...</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>6</td>
+<td>2006</td>
+<td>WD</td>
+<td>Normal</td>
+<td>131000</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2927</td>
+<td>2928</td>
+<td>923400125</td>
+<td>85</td>
+<td>RL</td>
+<td>10441</td>
+<td>Pave</td>
+<td>Reg</td>
+<td>Lvl</td>
+<td>AllPub</td>
+<td>Inside</td>
+<td>...</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>700</td>
+<td>7</td>
+<td>2006</td>
+<td>WD</td>
+<td>Normal</td>
+<td>132000</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">2928</td>
+<td>2929</td>
+<td>924100070</td>
+<td>20</td>
+<td>RL</td>
+<td>10010</td>
+<td>Pave</td>
+<td>Reg</td>
+<td>Lvl</td>
+<td>AllPub</td>
+<td>Inside</td>
+<td>...</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>4</td>
+<td>2006</td>
+<td>WD</td>
+<td>Normal</td>
+<td>170000</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2929</td>
+<td>2930</td>
+<td>924151050</td>
+<td>60</td>
+<td>RL</td>
+<td>9627</td>
+<td>Pave</td>
+<td>Reg</td>
+<td>Lvl</td>
+<td>AllPub</td>
+<td>Inside</td>
+<td>...</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>11</td>
+<td>2006</td>
+<td>WD</td>
+<td>Normal</td>
+<td>188000</td>
+</tr>
+</tbody>
+</table>
+
+<p>2821 rows × 71 columns</p>
+</div>
+</div>
+</div>
+<div class="cell" data-execution_count="18">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> ames.drop(<span class="st">'SalePrice'</span>, axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> ames[<span class="st">'SalePrice'</span>]</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>X_train, X_test, y_train, y_test <span class="op">=</span> train_test_split(X, y, test_size<span class="op">=</span><span class="fl">0.25</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell" data-execution_count="19">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Pipeline 1</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>lr <span class="op">=</span> LinearRegression()</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>std_s <span class="op">=</span> StandardScaler()</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>ct <span class="op">=</span> ColumnTransformer(</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    [(<span class="st">"standardize"</span>, std_s, [<span class="st">"Gr Liv Area"</span>, <span class="st">"TotRms AbvGrd"</span>])],</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    remainder <span class="op">=</span> <span class="st">"drop"</span> </span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>lr_pipeline <span class="op">=</span> Pipeline(</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  [(<span class="st">"standardize"</span>, ct),</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>  (<span class="st">"linear_regression"</span>, lr)]</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>lr_pipeline_fitted <span class="op">=</span> lr_pipeline.fit(X_train, y_train)</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>y_preds <span class="op">=</span> lr_pipeline_fitted.predict(X_test)</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>rmse1 <span class="op">=</span> mean_squared_error(y_test, y_preds, squared <span class="op">=</span> <span class="va">False</span>)</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>rmse1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="19">
+<pre><code>55659.17989912858</code></pre>
+</div>
+</div>
+<div class="cell" data-execution_count="20">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Pipeline 2</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>enc <span class="op">=</span> OneHotEncoder(sparse_output <span class="op">=</span> <span class="va">False</span>)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>ct <span class="op">=</span> ColumnTransformer(</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    [(<span class="st">"standardize"</span>, std_s, [<span class="st">"Gr Liv Area"</span>, <span class="st">"TotRms AbvGrd"</span>]),</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>     (<span class="st">"dummify"</span>, enc, [<span class="st">"Bldg Type"</span>])],</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    remainder <span class="op">=</span> <span class="st">"drop"</span> </span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>lr_pipeline2 <span class="op">=</span> Pipeline(</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>  [(<span class="st">"preprocessing"</span>, ct),</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>  (<span class="st">"linear_regression"</span>, lr)]</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>lr_pipeline_fitted2 <span class="op">=</span> lr_pipeline2.fit(X_train, y_train)</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>y_preds2 <span class="op">=</span> lr_pipeline_fitted2.predict(X_test)</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>rmse2 <span class="op">=</span> mean_squared_error(y_test, y_preds2, squared <span class="op">=</span> <span class="va">False</span>)</span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>rmse2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="20">
+<pre><code>54456.27691201109</code></pre>
+</div>
+</div>
+<div class="cell" data-execution_count="21">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Pipeline 3</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>enc <span class="op">=</span> OneHotEncoder(sparse_output <span class="op">=</span> <span class="va">False</span>)</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>ct_dummy <span class="op">=</span> ColumnTransformer(</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    [(<span class="st">"dummify"</span>, enc, [<span class="st">"Bldg Type"</span>])], remainder <span class="op">=</span> <span class="st">"passthrough"</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>).set_output(transform <span class="op">=</span> <span class="st">"pandas"</span>)</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>ct_dummy.fit_transform(X_train)</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>ct_interact <span class="op">=</span> ColumnTransformer(</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>    [(<span class="st">"interaction"</span>, PolynomialFeatures(interaction_only <span class="op">=</span> <span class="va">True</span>), [<span class="st">"remainder__Gr Liv Area"</span>, <span class="st">"dummify__Bldg Type_1Fam"</span>]),</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"interaction2"</span>, PolynomialFeatures(interaction_only <span class="op">=</span> <span class="va">True</span>), [<span class="st">"remainder__Gr Liv Area"</span>, <span class="st">"dummify__Bldg Type_2fmCon"</span>]),</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"interaction3"</span>, PolynomialFeatures(interaction_only <span class="op">=</span> <span class="va">True</span>), [<span class="st">"remainder__Gr Liv Area"</span>, <span class="st">"dummify__Bldg Type_Duplex"</span>]),</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"interaction4"</span>, PolynomialFeatures(interaction_only <span class="op">=</span> <span class="va">True</span>), [<span class="st">"remainder__Gr Liv Area"</span>, <span class="st">"dummify__Bldg Type_Twnhs"</span>]),</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"interaction5"</span>, PolynomialFeatures(interaction_only <span class="op">=</span> <span class="va">True</span>), [<span class="st">"remainder__Gr Liv Area"</span>, <span class="st">"dummify__Bldg Type_TwnhsE"</span>])],</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>).set_output(transform <span class="op">=</span> <span class="st">"pandas"</span>)</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>lr_pipeline_inter <span class="op">=</span> Pipeline(</span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>    [(<span class="st">"dummify"</span>, ct_dummy),</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>     (<span class="st">"interacting"</span>, ct_interact),</span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>      (<span class="st">"linear regression"</span>, lr)]</span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>).set_output(transform <span class="op">=</span> <span class="st">"pandas"</span>)</span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>lr_pipeline_fitted3 <span class="op">=</span> lr_pipeline_inter.fit(X_train, y_train)</span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>y_preds3 <span class="op">=</span> lr_pipeline_fitted3.predict(X_test)</span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a>rmse3 <span class="op">=</span> mean_squared_error(y_test, y_preds3, squared <span class="op">=</span> <span class="va">False</span>)</span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a>rmse3</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="21">
+<pre><code>54076.09217134571</code></pre>
+</div>
+</div>
+<div class="cell" data-execution_count="22">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Pipeline 4</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>enc <span class="op">=</span> OneHotEncoder(sparse_output <span class="op">=</span> <span class="va">False</span>)</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>ct_preprocess <span class="op">=</span> ColumnTransformer(</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    [(<span class="st">"dummify"</span>, enc, [<span class="st">"Bldg Type"</span>]),</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>     (<span class="st">"polynomial"</span>, PolynomialFeatures(degree <span class="op">=</span> <span class="dv">5</span>), [<span class="st">"Gr Liv Area"</span>, <span class="st">"TotRms AbvGrd"</span>])], remainder <span class="op">=</span> <span class="st">"drop"</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>).set_output(transform <span class="op">=</span> <span class="st">"pandas"</span>)</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>ct_preprocess.fit_transform(X_train)</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>lr_pipeline_poly <span class="op">=</span> Pipeline(</span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>    [(<span class="st">"preprocessing"</span>, ct_preprocess),</span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>      (<span class="st">"linear regression"</span>, lr)]</span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>).set_output(transform <span class="op">=</span> <span class="st">"pandas"</span>)</span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>lr_pipeline_fitted4 <span class="op">=</span> lr_pipeline_poly.fit(X_train, y_train) </span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>y_preds4 <span class="op">=</span> lr_pipeline_fitted4.predict(X_test)</span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>rmse4 <span class="op">=</span> mean_squared_error(y_test, y_preds4, squared <span class="op">=</span> <span class="va">False</span>)</span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>rmse4</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="22">
+<pre><code>113618.49579087284</code></pre>
+</div>
+</div>
+<p>Best RMSE was Model 3, 54076.</p>
+<section id="part-2-cross_val_score" class="level1">
+<h1>Part 2 Cross_Val_Score</h1>
+<div class="cell" data-execution_count="23">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>score1 <span class="op">=</span> cross_val_score(lr_pipeline, X, y, cv<span class="op">=</span><span class="dv">5</span>, scoring<span class="op">=</span><span class="st">'neg_root_mean_squared_error'</span>)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="op">-</span>score1.mean()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="23">
+<pre><code>55483.717958704314</code></pre>
+</div>
+</div>
+<div class="cell" data-execution_count="24">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>score2 <span class="op">=</span> cross_val_score(lr_pipeline2, X, y, cv<span class="op">=</span><span class="dv">5</span>, scoring<span class="op">=</span><span class="st">'neg_root_mean_squared_error'</span>)</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="op">-</span>score2.mean()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="24">
+<pre><code>54107.50773455426</code></pre>
+</div>
+</div>
+<div class="cell" data-execution_count="25">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>score3 <span class="op">=</span> cross_val_score(lr_pipeline_inter, X, y, cv<span class="op">=</span><span class="dv">5</span>, scoring<span class="op">=</span><span class="st">'neg_root_mean_squared_error'</span>)</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="op">-</span>score3.mean()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="25">
+<pre><code>53324.75612669396</code></pre>
+</div>
+</div>
+<div class="cell" data-execution_count="26">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>score4 <span class="op">=</span> cross_val_score(lr_pipeline_poly, X, y, cv<span class="op">=</span><span class="dv">5</span>, scoring<span class="op">=</span><span class="st">'neg_root_mean_squared_error'</span>)</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="op">-</span>score4.mean()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="26">
+<pre><code>58902.911810473175</code></pre>
+</div>
+</div>
+<p>Model 3 still had the best.</p>
+</section>
+<section id="part-3" class="level1">
+<h1>Part 3</h1>
+<div class="cell" data-execution_count="27">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>ct_tuning <span class="op">=</span> ColumnTransformer(</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  [(<span class="st">"size_polynomial"</span>, PolynomialFeatures(), [<span class="st">"Gr Liv Area"</span>]),</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>  (<span class="st">"rooms_polynomial"</span>, PolynomialFeatures(), [<span class="st">"TotRms AbvGrd"</span>]),</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>   (<span class="st">"dummify"</span>, OneHotEncoder(sparse_output <span class="op">=</span> <span class="va">False</span>), [<span class="st">"Bldg Type"</span>])],</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>  remainder <span class="op">=</span> <span class="st">"drop"</span></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>lr_pipeline_tuning <span class="op">=</span> Pipeline(</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>  [(<span class="st">"preprocessing"</span>, ct_tuning),</span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>  (<span class="st">"linear_regression"</span>, lr)]</span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>).set_output(transform<span class="op">=</span><span class="st">"pandas"</span>)</span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>degrees <span class="op">=</span> {<span class="st">'preprocessing__size_polynomial__degree'</span>: np.arange(<span class="dv">1</span>, <span class="dv">11</span>),</span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>           <span class="st">"preprocessing__rooms_polynomial__degree"</span>: np.arange(<span class="dv">1</span>, <span class="dv">11</span>)}</span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a>gscv <span class="op">=</span> GridSearchCV(lr_pipeline_tuning, degrees, cv <span class="op">=</span> <span class="dv">5</span>, scoring<span class="op">=</span><span class="st">'r2'</span>)</span>
+<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-18"><a href="#cb21-18" aria-hidden="true" tabindex="-1"></a>gscv_fitted <span class="op">=</span> gscv.fit(X, y)</span>
+<span id="cb21-19"><a href="#cb21-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-20"><a href="#cb21-20" aria-hidden="true" tabindex="-1"></a>gscv_fitted.cv_results_</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="27">
+<pre><code>{'mean_fit_time': array([0.00697026, 0.00398431, 0.00362024, 0.00364566, 0.00370445,
+        0.00372305, 0.00377741, 0.00379524, 0.00436339, 0.00635738,
+        0.00483575, 0.00539465, 0.00540013, 0.00503063, 0.00579901,
+        0.00667324, 0.00380645, 0.00555258, 0.00809798, 0.00705881,
+        0.00570874, 0.00521059, 0.00438414, 0.00524235, 0.00506496,
+        0.00546861, 0.00514212, 0.00544734, 0.00605974, 0.00821953,
+        0.0062561 , 0.00483413, 0.00759377, 0.00530825, 0.00568347,
+        0.00572896, 0.00535688, 0.00619941, 0.0052762 , 0.0061595 ,
+        0.00620265, 0.00448532, 0.00486751, 0.00386553, 0.006949  ,
+        0.00550823, 0.00738592, 0.00737309, 0.00761728, 0.00727921,
+        0.00605106, 0.005793  , 0.00625052, 0.00502234, 0.00690107,
+        0.00505962, 0.00687861, 0.00709839, 0.0055419 , 0.00625567,
+        0.00456672, 0.0052505 , 0.00558958, 0.00640583, 0.00643249,
+        0.00528979, 0.00539827, 0.0055449 , 0.00811195, 0.00717397,
+        0.00817895, 0.00720263, 0.00600863, 0.00573215, 0.00517039,
+        0.00525322, 0.00657172, 0.00509377, 0.00688725, 0.0051281 ,
+        0.00575948, 0.00577044, 0.00537534, 0.00547824, 0.00622749,
+        0.00506787, 0.00567994, 0.00680537, 0.00512466, 0.00617104,
+        0.00595217, 0.00576901, 0.00540605, 0.00513039, 0.00668373,
+        0.00684462, 0.00566649, 0.00503607, 0.00648932, 0.00726056]),
+ 'std_fit_time': array([2.04490241e-03, 3.84712698e-04, 3.02495211e-05, 1.36161850e-05,
+        2.58424624e-05, 5.85869696e-06, 3.22154939e-05, 1.76903372e-05,
+        5.02006420e-04, 2.02476918e-03, 1.25625106e-03, 2.17361289e-03,
+        2.11471503e-03, 1.17074623e-03, 2.36497235e-03, 2.23527975e-03,
+        4.00632894e-05, 3.42930244e-03, 2.72631340e-03, 3.74788509e-03,
+        2.58816037e-03, 1.99006345e-03, 1.20119925e-03, 1.71121070e-03,
+        1.20241836e-03, 1.83508662e-03, 1.59953740e-03, 2.05219466e-03,
+        2.36401001e-03, 1.77641332e-03, 3.05077831e-03, 6.52671309e-04,
+        4.98955965e-03, 2.00301015e-03, 2.22685631e-03, 2.22783968e-03,
+        1.27190371e-03, 2.74843767e-03, 1.43080566e-03, 2.39389100e-03,
+        2.95260441e-03, 1.44997762e-03, 1.12333536e-03, 3.77025344e-05,
+        3.69460246e-03, 2.00845396e-03, 3.30815835e-03, 3.51211729e-03,
+        3.23171165e-03, 4.44824053e-03, 2.28165302e-03, 1.71808564e-03,
+        3.61888552e-03, 1.69415394e-03, 2.76112329e-03, 1.43159625e-03,
+        2.73369232e-03, 3.27967225e-03, 1.48367144e-03, 1.97220290e-03,
+        1.47432634e-03, 1.52701562e-03, 2.45184434e-03, 2.47714656e-03,
+        2.13300125e-03, 1.42085488e-03, 1.98803923e-03, 1.89944278e-03,
+        2.53892947e-03, 2.30800625e-03, 3.97366123e-03, 3.52593106e-03,
+        2.06955161e-03, 2.03709452e-03, 1.33218661e-03, 1.46692082e-03,
+        2.18378262e-03, 9.41045488e-04, 2.23316585e-03, 8.77525165e-04,
+        2.30444574e-03, 1.69175824e-03, 1.99720363e-03, 1.34956715e-03,
+        2.63573195e-03, 8.97856163e-04, 1.98442452e-03, 2.01866972e-03,
+        7.50121422e-04, 2.26655162e-03, 2.10172317e-03, 1.88027930e-03,
+        1.75189466e-03, 5.96026565e-04, 2.23503906e-03, 2.26380379e-03,
+        1.74688747e-03, 7.38159837e-04, 1.90001093e-03, 2.48701053e-03]),
+ 'mean_score_time': array([0.0031342 , 0.00198555, 0.0018764 , 0.00187793, 0.00189443,
+        0.00189037, 0.00190878, 0.00192037, 0.00258179, 0.00303202,
+        0.00290275, 0.00276389, 0.00243001, 0.00316906, 0.002847  ,
+        0.00253878, 0.00191407, 0.00265021, 0.00317197, 0.00294194,
+        0.00254402, 0.00254889, 0.00241227, 0.0026618 , 0.00363326,
+        0.00273533, 0.00324988, 0.00354509, 0.00357089, 0.00566516,
+        0.0025166 , 0.00485978, 0.00458217, 0.001931  , 0.00289264,
+        0.00238934, 0.00311999, 0.00221615, 0.00351262, 0.00400395,
+        0.00262599, 0.00222144, 0.0031827 , 0.00189748, 0.00216193,
+        0.00483551, 0.00287685, 0.00592833, 0.00341258, 0.00322099,
+        0.00281339, 0.00358071, 0.00378523, 0.0033309 , 0.00274558,
+        0.0041008 , 0.00545049, 0.00246143, 0.00386682, 0.00268402,
+        0.00275397, 0.00281644, 0.00334358, 0.00350938, 0.00316896,
+        0.00308199, 0.00313773, 0.00333424, 0.00295744, 0.00368328,
+        0.00361605, 0.00264187, 0.00480118, 0.00263772, 0.00302835,
+        0.00287428, 0.00286422, 0.00322342, 0.00367594, 0.00326328,
+        0.00241156, 0.00347795, 0.00366764, 0.00407438, 0.00233178,
+        0.00318422, 0.0028964 , 0.00298514, 0.00327559, 0.00225358,
+        0.0031795 , 0.00247107, 0.00279675, 0.00351634, 0.00290132,
+        0.00218821, 0.00295362, 0.00374637, 0.00256391, 0.00208058]),
+ 'std_score_time': array([3.83849630e-04, 1.78802426e-04, 1.64942929e-05, 7.89248327e-06,
+        3.32215566e-06, 1.03138014e-05, 8.44823039e-06, 5.34313005e-06,
+        1.22568257e-03, 1.06066475e-03, 1.24574835e-03, 1.13022969e-03,
+        8.77459738e-04, 1.31256306e-03, 1.28258834e-03, 1.20560400e-03,
+        1.54479049e-05, 8.87769095e-04, 1.73364149e-03, 5.82397622e-04,
+        8.36997503e-04, 1.01740937e-03, 1.03792114e-03, 1.07097598e-03,
+        2.09144711e-03, 1.46412498e-03, 1.05867214e-03, 1.44063684e-03,
+        2.25536019e-03, 3.53733779e-03, 8.85096247e-04, 2.68915837e-03,
+        3.25348267e-03, 2.58683169e-05, 1.66010175e-03, 5.55592122e-04,
+        1.45159646e-03, 3.16646960e-04, 1.29095426e-03, 1.74140658e-03,
+        1.47564878e-03, 6.61961903e-04, 1.57305982e-03, 9.86787972e-06,
+        3.59153906e-04, 2.90425761e-03, 1.19543558e-03, 3.55164631e-03,
+        1.37935519e-03, 2.25869861e-03, 1.23797106e-03, 2.18399297e-03,
+        3.55235485e-03, 1.71706037e-03, 1.08387277e-03, 2.82230693e-03,
+        2.92755734e-03, 6.85347897e-04, 1.53074432e-03, 1.04562264e-03,
+        1.70962913e-03, 1.23831767e-03, 1.28081231e-03, 2.00570252e-03,
+        1.28623058e-03, 1.40285776e-03, 1.97806333e-03, 1.81334717e-03,
+        1.10958391e-03, 1.48961000e-03, 3.38692811e-03, 7.66486052e-04,
+        1.59570621e-03, 1.05224604e-03, 1.29072097e-03, 1.16818813e-03,
+        1.20334395e-03, 1.54434615e-03, 1.42709403e-03, 1.54785784e-03,
+        9.63502528e-04, 1.36967154e-03, 1.39520413e-03, 1.34626068e-03,
+        5.07393890e-04, 1.47895891e-03, 1.22818855e-03, 1.33558419e-03,
+        1.39196502e-03, 4.69294119e-04, 1.25056373e-03, 8.80855019e-04,
+        1.10157830e-03, 1.35777576e-03, 1.13648968e-03, 3.91052755e-04,
+        1.21755063e-03, 1.44247042e-03, 7.67837706e-04, 5.17667297e-05]),
+ 'param_preprocessing__rooms_polynomial__degree': masked_array(data=[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2,
+                    2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4,
+                    4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6,
+                    6, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 8, 8,
+                    8, 8, 8, 8, 8, 8, 8, 8, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9,
+                    10, 10, 10, 10, 10, 10, 10, 10, 10, 10],
+              mask=[False, False, False, False, False, False, False, False,
+                    False, False, False, False, False, False, False, False,
+                    False, False, False, False, False, False, False, False,
+                    False, False, False, False, False, False, False, False,
+                    False, False, False, False, False, False, False, False,
+                    False, False, False, False, False, False, False, False,
+                    False, False, False, False, False, False, False, False,
+                    False, False, False, False, False, False, False, False,
+                    False, False, False, False, False, False, False, False,
+                    False, False, False, False, False, False, False, False,
+                    False, False, False, False, False, False, False, False,
+                    False, False, False, False, False, False, False, False,
+                    False, False, False, False],
+        fill_value='?',
+             dtype=object),
+ 'param_preprocessing__size_polynomial__degree': masked_array(data=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8,
+                    9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6,
+                    7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4,
+                    5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2,
+                    3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+                    1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+              mask=[False, False, False, False, False, False, False, False,
+                    False, False, False, False, False, False, False, False,
+                    False, False, False, False, False, False, False, False,
+                    False, False, False, False, False, False, False, False,
+                    False, False, False, False, False, False, False, False,
+                    False, False, False, False, False, False, False, False,
+                    False, False, False, False, False, False, False, False,
+                    False, False, False, False, False, False, False, False,
+                    False, False, False, False, False, False, False, False,
+                    False, False, False, False, False, False, False, False,
+                    False, False, False, False, False, False, False, False,
+                    False, False, False, False, False, False, False, False,
+                    False, False, False, False],
+        fill_value='?',
+             dtype=object),
+ 'params': [{'preprocessing__rooms_polynomial__degree': 1,
+   'preprocessing__size_polynomial__degree': 1},
+  {'preprocessing__rooms_polynomial__degree': 1,
+   'preprocessing__size_polynomial__degree': 2},
+  {'preprocessing__rooms_polynomial__degree': 1,
+   'preprocessing__size_polynomial__degree': 3},
+  {'preprocessing__rooms_polynomial__degree': 1,
+   'preprocessing__size_polynomial__degree': 4},
+  {'preprocessing__rooms_polynomial__degree': 1,
+   'preprocessing__size_polynomial__degree': 5},
+  {'preprocessing__rooms_polynomial__degree': 1,
+   'preprocessing__size_polynomial__degree': 6},
+  {'preprocessing__rooms_polynomial__degree': 1,
+   'preprocessing__size_polynomial__degree': 7},
+  {'preprocessing__rooms_polynomial__degree': 1,
+   'preprocessing__size_polynomial__degree': 8},
+  {'preprocessing__rooms_polynomial__degree': 1,
+   'preprocessing__size_polynomial__degree': 9},
+  {'preprocessing__rooms_polynomial__degree': 1,
+   'preprocessing__size_polynomial__degree': 10},
+  {'preprocessing__rooms_polynomial__degree': 2,
+   'preprocessing__size_polynomial__degree': 1},
+  {'preprocessing__rooms_polynomial__degree': 2,
+   'preprocessing__size_polynomial__degree': 2},
+  {'preprocessing__rooms_polynomial__degree': 2,
+   'preprocessing__size_polynomial__degree': 3},
+  {'preprocessing__rooms_polynomial__degree': 2,
+   'preprocessing__size_polynomial__degree': 4},
+  {'preprocessing__rooms_polynomial__degree': 2,
+   'preprocessing__size_polynomial__degree': 5},
+  {'preprocessing__rooms_polynomial__degree': 2,
+   'preprocessing__size_polynomial__degree': 6},
+  {'preprocessing__rooms_polynomial__degree': 2,
+   'preprocessing__size_polynomial__degree': 7},
+  {'preprocessing__rooms_polynomial__degree': 2,
+   'preprocessing__size_polynomial__degree': 8},
+  {'preprocessing__rooms_polynomial__degree': 2,
+   'preprocessing__size_polynomial__degree': 9},
+  {'preprocessing__rooms_polynomial__degree': 2,
+   'preprocessing__size_polynomial__degree': 10},
+  {'preprocessing__rooms_polynomial__degree': 3,
+   'preprocessing__size_polynomial__degree': 1},
+  {'preprocessing__rooms_polynomial__degree': 3,
+   'preprocessing__size_polynomial__degree': 2},
+  {'preprocessing__rooms_polynomial__degree': 3,
+   'preprocessing__size_polynomial__degree': 3},
+  {'preprocessing__rooms_polynomial__degree': 3,
+   'preprocessing__size_polynomial__degree': 4},
+  {'preprocessing__rooms_polynomial__degree': 3,
+   'preprocessing__size_polynomial__degree': 5},
+  {'preprocessing__rooms_polynomial__degree': 3,
+   'preprocessing__size_polynomial__degree': 6},
+  {'preprocessing__rooms_polynomial__degree': 3,
+   'preprocessing__size_polynomial__degree': 7},
+  {'preprocessing__rooms_polynomial__degree': 3,
+   'preprocessing__size_polynomial__degree': 8},
+  {'preprocessing__rooms_polynomial__degree': 3,
+   'preprocessing__size_polynomial__degree': 9},
+  {'preprocessing__rooms_polynomial__degree': 3,
+   'preprocessing__size_polynomial__degree': 10},
+  {'preprocessing__rooms_polynomial__degree': 4,
+   'preprocessing__size_polynomial__degree': 1},
+  {'preprocessing__rooms_polynomial__degree': 4,
+   'preprocessing__size_polynomial__degree': 2},
+  {'preprocessing__rooms_polynomial__degree': 4,
+   'preprocessing__size_polynomial__degree': 3},
+  {'preprocessing__rooms_polynomial__degree': 4,
+   'preprocessing__size_polynomial__degree': 4},
+  {'preprocessing__rooms_polynomial__degree': 4,
+   'preprocessing__size_polynomial__degree': 5},
+  {'preprocessing__rooms_polynomial__degree': 4,
+   'preprocessing__size_polynomial__degree': 6},
+  {'preprocessing__rooms_polynomial__degree': 4,
+   'preprocessing__size_polynomial__degree': 7},
+  {'preprocessing__rooms_polynomial__degree': 4,
+   'preprocessing__size_polynomial__degree': 8},
+  {'preprocessing__rooms_polynomial__degree': 4,
+   'preprocessing__size_polynomial__degree': 9},
+  {'preprocessing__rooms_polynomial__degree': 4,
+   'preprocessing__size_polynomial__degree': 10},
+  {'preprocessing__rooms_polynomial__degree': 5,
+   'preprocessing__size_polynomial__degree': 1},
+  {'preprocessing__rooms_polynomial__degree': 5,
+   'preprocessing__size_polynomial__degree': 2},
+  {'preprocessing__rooms_polynomial__degree': 5,
+   'preprocessing__size_polynomial__degree': 3},
+  {'preprocessing__rooms_polynomial__degree': 5,
+   'preprocessing__size_polynomial__degree': 4},
+  {'preprocessing__rooms_polynomial__degree': 5,
+   'preprocessing__size_polynomial__degree': 5},
+  {'preprocessing__rooms_polynomial__degree': 5,
+   'preprocessing__size_polynomial__degree': 6},
+  {'preprocessing__rooms_polynomial__degree': 5,
+   'preprocessing__size_polynomial__degree': 7},
+  {'preprocessing__rooms_polynomial__degree': 5,
+   'preprocessing__size_polynomial__degree': 8},
+  {'preprocessing__rooms_polynomial__degree': 5,
+   'preprocessing__size_polynomial__degree': 9},
+  {'preprocessing__rooms_polynomial__degree': 5,
+   'preprocessing__size_polynomial__degree': 10},
+  {'preprocessing__rooms_polynomial__degree': 6,
+   'preprocessing__size_polynomial__degree': 1},
+  {'preprocessing__rooms_polynomial__degree': 6,
+   'preprocessing__size_polynomial__degree': 2},
+  {'preprocessing__rooms_polynomial__degree': 6,
+   'preprocessing__size_polynomial__degree': 3},
+  {'preprocessing__rooms_polynomial__degree': 6,
+   'preprocessing__size_polynomial__degree': 4},
+  {'preprocessing__rooms_polynomial__degree': 6,
+   'preprocessing__size_polynomial__degree': 5},
+  {'preprocessing__rooms_polynomial__degree': 6,
+   'preprocessing__size_polynomial__degree': 6},
+  {'preprocessing__rooms_polynomial__degree': 6,
+   'preprocessing__size_polynomial__degree': 7},
+  {'preprocessing__rooms_polynomial__degree': 6,
+   'preprocessing__size_polynomial__degree': 8},
+  {'preprocessing__rooms_polynomial__degree': 6,
+   'preprocessing__size_polynomial__degree': 9},
+  {'preprocessing__rooms_polynomial__degree': 6,
+   'preprocessing__size_polynomial__degree': 10},
+  {'preprocessing__rooms_polynomial__degree': 7,
+   'preprocessing__size_polynomial__degree': 1},
+  {'preprocessing__rooms_polynomial__degree': 7,
+   'preprocessing__size_polynomial__degree': 2},
+  {'preprocessing__rooms_polynomial__degree': 7,
+   'preprocessing__size_polynomial__degree': 3},
+  {'preprocessing__rooms_polynomial__degree': 7,
+   'preprocessing__size_polynomial__degree': 4},
+  {'preprocessing__rooms_polynomial__degree': 7,
+   'preprocessing__size_polynomial__degree': 5},
+  {'preprocessing__rooms_polynomial__degree': 7,
+   'preprocessing__size_polynomial__degree': 6},
+  {'preprocessing__rooms_polynomial__degree': 7,
+   'preprocessing__size_polynomial__degree': 7},
+  {'preprocessing__rooms_polynomial__degree': 7,
+   'preprocessing__size_polynomial__degree': 8},
+  {'preprocessing__rooms_polynomial__degree': 7,
+   'preprocessing__size_polynomial__degree': 9},
+  {'preprocessing__rooms_polynomial__degree': 7,
+   'preprocessing__size_polynomial__degree': 10},
+  {'preprocessing__rooms_polynomial__degree': 8,
+   'preprocessing__size_polynomial__degree': 1},
+  {'preprocessing__rooms_polynomial__degree': 8,
+   'preprocessing__size_polynomial__degree': 2},
+  {'preprocessing__rooms_polynomial__degree': 8,
+   'preprocessing__size_polynomial__degree': 3},
+  {'preprocessing__rooms_polynomial__degree': 8,
+   'preprocessing__size_polynomial__degree': 4},
+  {'preprocessing__rooms_polynomial__degree': 8,
+   'preprocessing__size_polynomial__degree': 5},
+  {'preprocessing__rooms_polynomial__degree': 8,
+   'preprocessing__size_polynomial__degree': 6},
+  {'preprocessing__rooms_polynomial__degree': 8,
+   'preprocessing__size_polynomial__degree': 7},
+  {'preprocessing__rooms_polynomial__degree': 8,
+   'preprocessing__size_polynomial__degree': 8},
+  {'preprocessing__rooms_polynomial__degree': 8,
+   'preprocessing__size_polynomial__degree': 9},
+  {'preprocessing__rooms_polynomial__degree': 8,
+   'preprocessing__size_polynomial__degree': 10},
+  {'preprocessing__rooms_polynomial__degree': 9,
+   'preprocessing__size_polynomial__degree': 1},
+  {'preprocessing__rooms_polynomial__degree': 9,
+   'preprocessing__size_polynomial__degree': 2},
+  {'preprocessing__rooms_polynomial__degree': 9,
+   'preprocessing__size_polynomial__degree': 3},
+  {'preprocessing__rooms_polynomial__degree': 9,
+   'preprocessing__size_polynomial__degree': 4},
+  {'preprocessing__rooms_polynomial__degree': 9,
+   'preprocessing__size_polynomial__degree': 5},
+  {'preprocessing__rooms_polynomial__degree': 9,
+   'preprocessing__size_polynomial__degree': 6},
+  {'preprocessing__rooms_polynomial__degree': 9,
+   'preprocessing__size_polynomial__degree': 7},
+  {'preprocessing__rooms_polynomial__degree': 9,
+   'preprocessing__size_polynomial__degree': 8},
+  {'preprocessing__rooms_polynomial__degree': 9,
+   'preprocessing__size_polynomial__degree': 9},
+  {'preprocessing__rooms_polynomial__degree': 9,
+   'preprocessing__size_polynomial__degree': 10},
+  {'preprocessing__rooms_polynomial__degree': 10,
+   'preprocessing__size_polynomial__degree': 1},
+  {'preprocessing__rooms_polynomial__degree': 10,
+   'preprocessing__size_polynomial__degree': 2},
+  {'preprocessing__rooms_polynomial__degree': 10,
+   'preprocessing__size_polynomial__degree': 3},
+  {'preprocessing__rooms_polynomial__degree': 10,
+   'preprocessing__size_polynomial__degree': 4},
+  {'preprocessing__rooms_polynomial__degree': 10,
+   'preprocessing__size_polynomial__degree': 5},
+  {'preprocessing__rooms_polynomial__degree': 10,
+   'preprocessing__size_polynomial__degree': 6},
+  {'preprocessing__rooms_polynomial__degree': 10,
+   'preprocessing__size_polynomial__degree': 7},
+  {'preprocessing__rooms_polynomial__degree': 10,
+   'preprocessing__size_polynomial__degree': 8},
+  {'preprocessing__rooms_polynomial__degree': 10,
+   'preprocessing__size_polynomial__degree': 9},
+  {'preprocessing__rooms_polynomial__degree': 10,
+   'preprocessing__size_polynomial__degree': 10}],
+ 'split0_test_score': array([0.5327877 , 0.53255021, 0.54799913, 0.54599203, 0.52021995,
+        0.52031781, 0.51703736, 0.50156338, 0.46590866, 0.41269356,
+        0.52241368, 0.53093951, 0.53947444, 0.53880738, 0.52021995,
+        0.52031781, 0.51703736, 0.50156338, 0.46590866, 0.41269356,
+        0.52738991, 0.53342744, 0.53994908, 0.539435  , 0.51267696,
+        0.52031781, 0.51703736, 0.50156338, 0.46590866, 0.41269356,
+        0.53509314, 0.54034042, 0.54340447, 0.54217499, 0.51182216,
+        0.52031781, 0.51703736, 0.50156338, 0.46590866, 0.41269356,
+        0.53501762, 0.53993423, 0.54322848, 0.54224578, 0.51174728,
+        0.52031781, 0.51703736, 0.50156338, 0.46590866, 0.41269356,
+        0.53501671, 0.54012777, 0.5434544 , 0.54214773, 0.51688313,
+        0.51399099, 0.51703736, 0.50156338, 0.46590866, 0.41269356,
+        0.53423784, 0.53974593, 0.54468776, 0.54281988, 0.51638732,
+        0.51598839, 0.51703736, 0.50156338, 0.46590866, 0.41269356,
+        0.5342951 , 0.53953553, 0.54488387, 0.54312218, 0.51728007,
+        0.510957  , 0.51703736, 0.50156338, 0.46590866, 0.41269356,
+        0.53320865, 0.53853954, 0.54411962, 0.54295689, 0.51853286,
+        0.51173715, 0.51703735, 0.50156338, 0.46590866, 0.41269405,
+        0.53327893, 0.53856237, 0.54423413, 0.54359943, 0.51856284,
+        0.51244892, 0.5170266 , 0.50156338, 0.46590227, 0.41269405]),
+ 'split1_test_score': array([0.52771314, 0.5202267 , 0.52876606, 0.52857492, 0.46537217,
+        0.46380469, 0.45564229, 0.43355191, 0.39470596, 0.34603382,
+        0.53171697, 0.51335224, 0.53246114, 0.53100432, 0.46537217,
+        0.46380469, 0.45564229, 0.43355191, 0.39470596, 0.34603382,
+        0.53123803, 0.51933103, 0.53282177, 0.53142578, 0.49959094,
+        0.46380469, 0.45564229, 0.43355191, 0.39470596, 0.34603382,
+        0.53038312, 0.51519162, 0.5292711 , 0.52801828, 0.50066352,
+        0.46380469, 0.45564229, 0.43355191, 0.39470596, 0.34603382,
+        0.52945223, 0.51402936, 0.52738862, 0.52680123, 0.50024536,
+        0.46380469, 0.45564229, 0.43355191, 0.39470596, 0.34603382,
+        0.52961015, 0.51472976, 0.5284353 , 0.52664158, 0.49000749,
+        0.49708196, 0.45564229, 0.43355191, 0.39470596, 0.34603382,
+        0.52782218, 0.51251279, 0.52441365, 0.52642606, 0.48839263,
+        0.49397428, 0.45564229, 0.43355191, 0.39470596, 0.34603382,
+        0.53025616, 0.51455823, 0.5251887 , 0.5220848 , 0.49060924,
+        0.49773534, 0.45564229, 0.43355191, 0.39470596, 0.34603382,
+        0.51766141, 0.50614879, 0.51904038, 0.52254097, 0.49029341,
+        0.49585026, 0.45564226, 0.43355191, 0.39470596, 0.34602934,
+        0.49006079, 0.48315679, 0.50251206, 0.52166951, 0.48897702,
+        0.49012111, 0.47987501, 0.43355191, 0.39470597, 0.34602934]),
+ 'split2_test_score': array([ 4.24445855e-01,  4.49339085e-01,  5.09569773e-01,  4.62274641e-01,
+         1.92321138e-01, -3.50109358e-01, -1.61672634e+00, -4.77637833e+00,
+        -1.28060243e+01, -3.28956640e+01,  4.29099789e-01,  4.46306768e-01,
+         5.09958669e-01,  4.70121831e-01,  1.92321129e-01, -3.50109358e-01,
+        -1.61672634e+00, -4.77637833e+00, -1.28060243e+01, -3.28956640e+01,
+         4.32460154e-01,  4.36270927e-01,  5.00627671e-01,  4.81974255e-01,
+         3.55153781e-01, -3.50109358e-01, -1.61672634e+00, -4.77637833e+00,
+        -1.28060243e+01, -3.28956640e+01,  4.17839842e-01,  4.13155162e-01,
+         4.69325927e-01,  5.01221467e-01,  3.43888439e-01, -3.50109358e-01,
+        -1.61672634e+00, -4.77637833e+00, -1.28060243e+01, -3.28956640e+01,
+         4.15856017e-01,  4.05802180e-01,  4.63201589e-01,  5.01323362e-01,
+         3.45666786e-01, -3.50109357e-01, -1.61672634e+00, -4.77637833e+00,
+        -1.28060243e+01, -3.28956640e+01,  4.15672513e-01,  4.07234675e-01,
+         4.69081983e-01,  4.99066696e-01,  4.54846639e-01,  2.77368394e-01,
+        -1.61672634e+00, -4.77637833e+00, -1.28060243e+01, -3.28956640e+01,
+         4.15615840e-01,  4.07060080e-01,  4.73278879e-01,  4.83729454e-01,
+         4.66708182e-01,  3.14794153e-01, -1.61672634e+00, -4.77637833e+00,
+        -1.28060243e+01, -3.28956640e+01,  4.16662566e-01,  4.06946603e-01,
+         4.70769139e-01,  4.79480685e-01,  1.92220868e-01, -2.09719152e-01,
+        -1.61672625e+00, -4.77637833e+00, -1.28060243e+01, -3.28956640e+01,
+         4.19252281e-01,  4.09975288e-01,  4.72194645e-01,  4.82242502e-01,
+        -5.28384534e-02, -3.30090566e-01, -3.04986905e-02, -4.77637833e+00,
+        -1.28060243e+01, -3.28956028e+01,  4.19145242e-01,  4.09610154e-01,
+         4.72109035e-01,  4.86140286e-01, -1.37406942e-01, -1.93001348e-01,
+        -4.82601501e-02, -4.77637834e+00, -1.28060160e+01, -3.28956028e+01]),
+ 'split3_test_score': array([ 5.67594205e-01,  5.85068095e-01,  5.99378480e-01,  6.05918157e-01,
+         5.58312063e-01,  5.11277610e-01,  7.38405043e-03, -3.85778623e+00,
+        -2.66734142e+01, -1.32062266e+02,  5.70909455e-01,  5.77155735e-01,
+         6.02298665e-01,  6.08078012e-01,  5.58312065e-01,  5.11277610e-01,
+         7.38405043e-03, -3.85778623e+00, -2.66734142e+01, -1.32062266e+02,
+         5.92712551e-01,  5.89223574e-01,  5.97663444e-01,  6.05671067e-01,
+         5.90802075e-01,  5.11277610e-01,  7.38405043e-03, -3.85778623e+00,
+        -2.66734142e+01, -1.32062266e+02,  6.20785246e-01,  6.09669864e-01,
+         6.08066917e-01,  6.14253944e-01,  5.76755629e-01,  5.11277610e-01,
+         7.38405043e-03, -3.85778623e+00, -2.66734142e+01, -1.32062266e+02,
+         6.19240304e-01,  5.92981008e-01,  5.98413232e-01,  6.15638243e-01,
+         5.63395251e-01,  5.11277618e-01,  7.38405043e-03, -3.85778623e+00,
+        -2.66734142e+01, -1.32062266e+02,  6.14387382e-01,  6.09966190e-01,
+         5.53246462e-01,  5.93605020e-01,  5.94526069e-01,  5.82676480e-01,
+         7.38405043e-03, -3.85778623e+00, -2.66734142e+01, -1.32062266e+02,
+        -1.73308822e+00, -2.98516925e-01,  9.53196531e-02,  6.15277932e-01,
+         5.60869775e-01,  5.83504584e-01,  7.38405022e-03, -3.85778623e+00,
+        -2.66734142e+01, -1.32062266e+02, -1.01008769e+01, -3.90187322e+00,
+        -3.65155801e-01,  5.19907110e-01,  4.84228411e-01,  3.73490970e-01,
+         7.38405244e-03, -3.85778623e+00, -2.66734142e+01, -1.32062266e+02,
+        -5.74867813e+00, -4.13129206e-01, -4.71501195e+00, -2.94229635e+00,
+         5.95310588e-01,  2.78436620e-01,  7.38409243e-03, -3.85778623e+00,
+        -2.66734142e+01, -1.32062537e+02, -6.09135779e+02, -7.45131387e+02,
+        -1.70942118e+03, -1.32565953e+00,  3.67090418e-01, -8.17494188e-01,
+         3.17551100e-01, -3.85778623e+00, -2.66734296e+01, -1.32062537e+02]),
+ 'split4_test_score': array([0.60983255, 0.59299493, 0.60558299, 0.61158761, 0.58001604,
+        0.57425522, 0.55916961, 0.53533119, 0.50954384, 0.47175442,
+        0.60082703, 0.59354587, 0.60272305, 0.60797992, 0.58001604,
+        0.57425522, 0.55916961, 0.53533119, 0.50954384, 0.47175442,
+        0.5958252 , 0.5905149 , 0.60084138, 0.60735122, 0.59996505,
+        0.57425522, 0.55916961, 0.53533119, 0.50954384, 0.47175442,
+        0.60517876, 0.59916512, 0.605381  , 0.61043484, 0.59489516,
+        0.57425522, 0.55916961, 0.53533119, 0.50954384, 0.47175442,
+        0.60482531, 0.59712876, 0.60469537, 0.61060147, 0.59544486,
+        0.57425523, 0.55916961, 0.53533119, 0.50954384, 0.47175442,
+        0.60488538, 0.59790998, 0.60559018, 0.61014275, 0.60444609,
+        0.58377964, 0.55916961, 0.53533119, 0.50954384, 0.47175442,
+        0.6038864 , 0.59734935, 0.6071539 , 0.61115636, 0.60380043,
+        0.58189778, 0.55916961, 0.53533119, 0.50954384, 0.47175442,
+        0.60244498, 0.59621175, 0.60650977, 0.61152121, 0.60362789,
+        0.58257889, 0.55916961, 0.53533119, 0.50954384, 0.47175442,
+        0.60473396, 0.59831068, 0.60779531, 0.61132129, 0.60539072,
+        0.58018287, 0.55916961, 0.53533119, 0.50954384, 0.47175918,
+        0.60038478, 0.59439429, 0.60355244, 0.61241876, 0.60539197,
+        0.59089561, 0.56566986, 0.53533119, 0.50954383, 0.47175918]),
+ 'mean_test_score': array([ 5.32474691e-01,  5.36035805e-01,  5.58259287e-01,  5.50869471e-01,
+         4.63248271e-01,  3.43909196e-01, -1.54986045e-02, -1.43274362e+00,
+        -7.62185602e+00, -3.27454896e+01,  5.30993385e-01,  5.32260024e-01,
+         5.57383191e-01,  5.51198293e-01,  4.63248270e-01,  3.43909196e-01,
+        -1.54986045e-02, -1.43274362e+00, -7.62185602e+00, -3.27454896e+01,
+         5.35925169e-01,  5.33753574e-01,  5.54380670e-01,  5.53171466e-01,
+         5.11637762e-01,  3.43909196e-01, -1.54986045e-02, -1.43274362e+00,
+        -7.62185602e+00, -3.27454896e+01,  5.41856023e-01,  5.35504437e-01,
+         5.51089882e-01,  5.59220704e-01,  5.05604981e-01,  3.43909196e-01,
+        -1.54986045e-02, -1.43274362e+00, -7.62185602e+00, -3.27454896e+01,
+         5.40878295e-01,  5.29975108e-01,  5.47385457e-01,  5.59322016e-01,
+         5.03299906e-01,  3.43909198e-01, -1.54986045e-02, -1.43274362e+00,
+        -7.62185602e+00, -3.27454896e+01,  5.39914426e-01,  5.33993677e-01,
+         5.39961664e-01,  5.54320755e-01,  5.32141883e-01,  4.90979492e-01,
+        -1.54986045e-02, -1.43274362e+00, -7.62185602e+00, -3.27454896e+01,
+         6.96948055e-02,  3.51630246e-01,  4.48970769e-01,  5.55881935e-01,
+         5.27231666e-01,  4.98031837e-01, -1.54986047e-02, -1.43274362e+00,
+        -7.62185602e+00, -3.27454896e+01, -1.60344361e+00, -3.68924221e-01,
+         3.56439134e-01,  5.35223196e-01,  4.57593294e-01,  3.51008610e-01,
+        -1.54985864e-02, -1.43274362e+00, -7.62185602e+00, -3.27454896e+01,
+        -7.34764365e-01,  3.27969019e-01, -5.14372402e-01, -1.56646941e-01,
+         4.31337825e-01,  3.07223266e-01,  3.01746924e-01, -1.43274362e+00,
+        -7.62185602e+00, -3.27455315e+01, -1.21418582e+02, -1.48621133e+02,
+        -3.41459754e+02,  1.67633692e-01,  3.68523062e-01,  1.16594020e-01,
+         3.66372484e-01, -1.43274362e+00, -7.62185870e+00, -3.27455315e+01]),
+ 'std_test_score': array([6.14989724e-02, 5.18206635e-02, 3.81473743e-02, 5.49307383e-02,
+        1.40942280e-01, 3.48777339e-01, 8.24653350e-01, 2.37312645e+00,
+        1.08225167e+01, 5.13064204e+01, 5.81832802e-02, 5.19976737e-02,
+        3.81156651e-02, 5.21424583e-02, 1.40942283e-01, 3.48777339e-01,
+        8.24653350e-01, 2.37312645e+00, 1.08225167e+01, 5.13064204e+01,
+        5.93509050e-02, 5.65857781e-02, 3.89729088e-02, 4.77959461e-02,
+        8.79797030e-02, 3.48777339e-01, 8.24653350e-01, 2.37312645e+00,
+        1.08225167e+01, 5.13064204e+01, 7.18289202e-02, 7.06520145e-02,
+        5.17964819e-02, 4.53422628e-02, 8.86007472e-02, 3.48777339e-01,
+        8.24653350e-01, 2.37312645e+00, 1.08225167e+01, 5.13064204e+01,
+        7.21460986e-02, 6.96444158e-02, 5.17539125e-02, 4.58566097e-02,
+        8.60593180e-02, 3.48777340e-01, 8.24653350e-01, 2.37312645e+00,
+        1.08225167e+01, 5.13064204e+01, 7.11809867e-02, 7.25722910e-02,
+        4.39376231e-02, 4.15371606e-02, 5.84848299e-02, 1.12442585e-01,
+        8.24653350e-01, 2.37312645e+00, 1.08225167e+01, 5.13064204e+01,
+        9.03407947e-01, 3.30881367e-01, 1.81953439e-01, 5.06505539e-02,
+        4.95650287e-02, 9.82385236e-02, 8.24653350e-01, 2.37312645e+00,
+        1.08225167e+01, 5.13064204e+01, 4.24913513e+00, 1.76754248e+00,
+        3.63398887e-01, 4.33548325e-02, 1.39363281e-01, 2.88325543e-01,
+        8.24653314e-01, 2.37312645e+00, 1.08225167e+01, 5.13064204e+01,
+        2.50765497e+00, 3.75532741e-01, 2.10077580e+00, 1.39345178e+00,
+        2.46043443e-01, 3.34338333e-01, 2.58200235e-01, 2.37312645e+00,
+        1.08225167e+01, 5.13065257e+01, 2.43858606e+02, 2.98255134e+02,
+        6.83980714e+02, 7.47782918e-01, 2.64232925e-01, 5.45812359e-01,
+        2.23429040e-01, 2.37312645e+00, 1.08225204e+01, 5.13065257e+01]),
+ 'rank_test_score': array([ 23,  17,   3,  11,  34,  48,  56,  67,  80,  94,  26,  24,   4,
+          9,  35,  47,  60,  74,  79,  92,  18,  22,   6,   8,  29,  46,
+         57,  73,  85,  91,  13,  19,  10,   2,  30,  45,  61,  68,  84,
+         90,  14,  27,  12,   1,  31,  44,  58,  72,  86,  95,  16,  21,
+         15,   7,  25,  33,  59,  69,  83,  89,  54,  42,  37,   5,  28,
+         32,  62,  70,  78,  93,  77,  64,  41,  20,  36,  43,  55,  71,
+         82,  88,  66,  49,  65,  63,  38,  50,  51,  75,  81,  96,  98,
+         99, 100,  52,  39,  53,  40,  76,  87,  96], dtype=int32)}</code></pre>
+</div>
+</div>
+<div class="cell" data-execution_count="30">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>gscv_df <span class="op">=</span> pd.DataFrame(gscv_fitted.cv_results_)</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>gscv_df <span class="op">=</span> gscv_df[[<span class="st">"param_preprocessing__rooms_polynomial__degree"</span>,</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"param_preprocessing__size_polynomial__degree"</span>,</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"mean_test_score"</span>]]</span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>gscv_df.rename(columns <span class="op">=</span> {</span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">"param_preprocessing__rooms_polynomial__degree"</span> : <span class="st">"room degree"</span>,</span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">"param_preprocessing__size_polynomial__degree"</span> : <span class="st">"size degree"</span>,</span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">"mean_test_score"</span>: <span class="st">"r2"</span></span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>}, inplace <span class="op">=</span> <span class="va">True</span>)</span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>gscv_df.sort_values(by <span class="op">=</span> <span class="st">"r2"</span>, ascending <span class="op">=</span> <span class="va">False</span>).head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="30">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">room degree</th>
+<th data-quarto-table-cell-role="th">size degree</th>
+<th data-quarto-table-cell-role="th">r2</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">43</td>
+<td>5</td>
+<td>4</td>
+<td>0.559322</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">33</td>
+<td>4</td>
+<td>4</td>
+<td>0.559221</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>1</td>
+<td>3</td>
+<td>0.558259</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">12</td>
+<td>2</td>
+<td>3</td>
+<td>0.557383</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">63</td>
+<td>7</td>
+<td>4</td>
+<td>0.555882</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<p>The best model was a polynomial with 5th degree room and 4th degree for the size</p>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
